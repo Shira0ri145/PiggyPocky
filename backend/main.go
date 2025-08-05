@@ -15,7 +15,7 @@ import (
 // @title PiggyPocky API
 // @version 1.0
 // @description Backend API for PiggyPocky
-// @host localhost:3000
+// @host localhost:8000
 // @BasePath /
 
 // @securityDefinitions.apikey BearerAuth
@@ -47,5 +47,5 @@ func main() {
 	api.Get("/transactions", handlers.GetTransactions)
 	api.Get("/transactions/monthly", handlers.GetMonthlySummary)
 
-	app.Listen(":3000")
+	app.Listen(":8000")
 }
