@@ -1,0 +1,390 @@
+basePath: /
+definitions:
+  models.AmountResponse:
+    properties:
+      balance:
+        type: number
+      user_id:
+        type: integer
+    type: object
+  models.CoinInput:
+    properties:
+      amount:
+        type: number
+      user_id:
+        type: integer
+    type: object
+  models.LoginInput:
+    properties:
+      password:
+        example: admin123
+        type: string
+      username:
+        example: admin
+        type: string
+    type: object
+  models.RegisterInput:
+    properties:
+      password:
+        type: string
+      role:
+        description: admin or user
+        type: string
+      username:
+        type: string
+    type: object
+  models.Transaction:
+    properties:
+      amount:
+        type: number
+      createdAt:
+        type: string
+      id:
+        type: integer
+      type:
+        description: deposit / withdraw
+        type: string
+      userID:
+        type: integer
+    type: object
+  models.UserProfile:
+    properties:
+      balance:
+        example: 0
+        type: number
+      id:
+        example: 1
+        type: integer
+      role:
+        example: admin
+        type: string
+      username:
+        example: admin
+        type: string
+    type: object
+  models.WithdrawInput:
+    properties:
+      amount:
+        type: number
+      user_id:
+        type: integer
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: Backend API for PiggyPocky
+  title: PiggyPocky API
+  version: "1.0"
+paths:
+  /api/amount:
+    get:
+      consumes:
+      - application/json
+      description: Get current user's balance amount
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AmountResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get amount of current user
+      tags:
+      - Amount
+  /api/insert-coin:
+    post:
+      consumes:
+      - application/json
+      description: Accept coin and update user balance (ESP32 only)
+      parameters:
+      - description: ESP API Key
+        in: header
+        name: X-ESP-KEY
+        required: true
+        type: string
+      - description: Coin data
+        in: body
+        name: coin
+        required: true
+        schema:
+          $ref: '#/definitions/models.CoinInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Insert coin from ESP32
+      tags:
+      - Transaction
+  /api/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get profile of the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserProfile'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current user profile
+      tags:
+      - Profile
+  /api/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user (admin only). Also creates amount with default
+        value = 0
+      parameters:
+      - description: New user info
+        in: body
+        name: register
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Register a new user (Admin only)
+      tags:
+      - Auth
+  /api/transactions:
+    get:
+      consumes:
+      - application/json
+      description: Get list of transactions sorted by date and time (latest first)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Transaction'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user transactions
+      tags:
+      - Transaction
+  /api/transactions/monthly:
+    get:
+      consumes:
+      - application/json
+      description: Return summary of deposit and withdraw amounts grouped by month
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get monthly summary of transactions
+      tags:
+      - Transaction
+  /api/withdraw:
+    post:
+      consumes:
+      - application/json
+      description: Withdraw from balance if sufficient
+      parameters:
+      - description: Withdraw data
+        in: body
+        name: withdraw
+        required: true
+        schema:
+          $ref: '#/definitions/models.WithdrawInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Withdraw money from user
+      tags:
+      - Transaction
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login
+      tags:
+      - Auth
+  /logout:
+    post:
+      description: Revoke JWT token by adding it to Redis blacklist
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Logout current user
+      tags:
+      - Auth
+securityDefinitions:
+  BearerAuth:
+    description: 'Type "Bearer" followed by a space and JWT token. Example: "Bearer
+      xxxxxx"'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

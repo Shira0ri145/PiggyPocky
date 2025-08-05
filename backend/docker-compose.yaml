@@ -5,9 +5,9 @@ services:
     image: postgres:latest
     container_name: postgres
     environment:
-      POSTGRES_DB: mydatabase
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: piggydb
+      POSTGRES_USER: piggypocky
+      POSTGRES_PASSWORD: piggy12123
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -24,6 +24,13 @@ services:
       - "5050:80"
     depends_on:
       - postgres
+    restart: unless-stopped
+
+  redis:
+    image: redis:6
+    container_name: redis
+    ports:
+      - "6379:6379"
     restart: unless-stopped
 
 volumes:
